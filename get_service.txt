@@ -1,0 +1,19 @@
+create or replace function get_service(productlist varchar, pin_code integer)
+RETURNS SETOF VARCHAR AS $$
+DECLARE 
+     product_ids INTEGER;
+	 product_array INTEGER[];
+	 product_names VARCHAR;
+BEGIN
+     product_array := string_to_array(productlist,',');
+	 
+	 FOREACH product_ids IN ARRAY product_array
+	 LOOP
+	   IF EXISTS(SELECT 1 FROM unserviceableregions where prod_id=product_ids and pincode=pin_code)THEN
+	    SELECT prod_title into product_names from products where prod_id=product_ids;
+		Return NEXT product_names;
+	   end if;
+	 END LOOP;
+	 RETURN;
+END;
+$$ LANGUAGE plpgsql;
