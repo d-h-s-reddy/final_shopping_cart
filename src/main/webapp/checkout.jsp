@@ -109,7 +109,7 @@
 </div>
 
 
-<br>
+<br><br>
  <script>
     $(document).ready(function() {
 	    $("#discountvalues").change(function() {
@@ -120,16 +120,15 @@
 	            data: { "discount": discount_value },
 	            success: function(data) {
 	            	console.log(data[1]);
-	                datadisplaying(data[0]);
-	                pricegstdisplay(data[1]);
-	                calshipping();
+	                
+	                calshipping(data);
 	            },
 	            error: function(xhr, status, error) {
 	                console.error(status, error);
 	            }
 	        });
 	    });
-	    function datadisplaying(data){
+	    function datadisplaying(data,ship){
 	    	$("#discountdetails").empty();
 	    	var $table = $('<table>').addClass('data-table');
 	    	  var $thead = $('<thead>');
@@ -140,6 +139,8 @@
 	    	  $headerRow.append($('<th>').text('Sno'));
 	    	  $headerRow.append($('<th>').text('Price'));
 	    	  $headerRow.append($('<th>').text('GST'));
+	    	  $headerRow.append($('<th>').text('Shipping Charge'));
+	    	  $headerRow.append($('<th>').text('Shipping GST'));
 	    	  $thead.append($headerRow);
 	    	  var count=1;
 	    	  // Create table body rows
@@ -151,26 +152,52 @@
 	    		    	 var roundedValue = parseFloat(value).toFixed(2);
 	    		         $row.append($('<td>').text(roundedValue));
 	    		    });
-	    		    $tbody.append($row);
-	    		  });
+	    		    //i need to add the json ship which contain the two values how i can do this;
+	    		    if (ship[key]) { // Ensure the ship data exists for the current key
+                       $.each(ship[key], function(index, value) {
+                        var roundedValue = parseFloat(value).toFixed(2);
+                        $row.append($('<td>').text(roundedValue));
+                     });
+                   }
+	     		    $tbody.append($row);
+	          });
+	    	 
 
 	    		  $table.append($thead).append($tbody);
 	    		  // Append the table to the body
 	    		  $('#discountdetails').append($table);	 
 	    }
-	    function  pricegstdisplay(data){
+	    function  pricegstdisplay(data,ship){
+	    	
 	    	$("#valuesdata").empty();
 	    	var $dataContainer = $('#valuesdata');
 	    	  var $table = $('<table>').addClass('data-table').attr('id', 'myDataTable');;
 	    	  var $tbody = $('<tbody>');
-
+	    	  
 	    	  // Loop through the data object and create table rows
+	    	  var total=0;
 	    	  $.each(data, function(key, value) {
 	    	    var $row = $('<tr>');
 	    	    $row.append($('<td>').text(key));
-	    	    $row.append($('<td>').text(value.toFixed(2))); // Round off to 2 decimal places
+	    	    $row.append($('<td>').text(value.toFixed(2)));
+	    	    total=total+Number(value.toFixed(2));
+	    	    // Round off to 2 decimal places
 	    	    $tbody.append($row);
 	    	  });
+	    	  $.each(ship, function(key, value) {
+		    	    var $row = $('<tr>');
+		    	    $row.append($('<td>').text(key));
+		    	    $row.append($('<td>').text(value.toFixed(2)));
+		    	    total=total+Number(value.toFixed(2));
+		    	    // Round off to 2 decimal places
+		    	    $tbody.append($row);
+		     });
+	    	 var $row=$('<tr>');
+	    	 $row.append($('<td>').text("Total Amount to be paid"));
+	    	 $row.append($('<td>').text(total));
+	    	 $tbody.append($row);
+	    	  
+	    	  
 
 	    	  // Append table body to the table
 	    	  $table.append($tbody);
@@ -178,35 +205,24 @@
 	    	  // Append table to the data container
 	    	  $dataContainer.append($table);
 	    }
-	    function calshipping(){
+	    function calshipping(data){
 	    	$.ajax({
 	    		url:'ShippingServlet',
 	    		type:'POST',
 	    		dataType:"json",
-	    		success:function(data){
-	    			console.log(data);
-	    			displayingshipping(data[0]);
+	    		success:function(ship){
+	    			console.log(ship);
+	    			console.log(ship[1]["ShippingGst"])
+	    			datadisplaying(data[0],ship[0]);
+	                pricegstdisplay(data[1],ship[1]);
+	    			
 	    		},
 	    		error: function(xhr, status, error) {
 	                console.error(status, error);
 	            }
 	    	});
 	    }
-	    function displayingshipping(data){
-	    	var $tableReference = $('#myDataTable');
-	    	$table.find('thead tr').append($('<th>').text('Shipping charge'));
-	        $table.find('thead tr').append($('<th>').text('Shipping Gst'));
-	        var $tbodyRows = $table.find('tbody tr');
-	        $tbodyRows.each(function(index) {
-	            // Assuming data keys are sorted and match the row index
-	            var key = Object.keys(data)[index];
-	            var values = data[key];
-
-	            // Append new data to each row
-	            $(this).append($('<td>').text(values[0].toFixed(2))); // New Column 1
-	            $(this).append($('<td>').text(values[1].toFixed(3))); // New Column 2
-	        });
-	    }
+	    
 	});
      
  </script>

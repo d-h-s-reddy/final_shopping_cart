@@ -7,9 +7,12 @@ import java.util.Map;
 
 import models.Discount;
 import models.Products;
+import models.User;
 
 public interface Contract {
 	boolean loginverification(String user_name, String pswd) throws Exception;
+
+	// void addUser1(User User) throws Exception;
 
 	ArrayList<String> productCategories() throws SQLException;
 
@@ -26,5 +29,7 @@ public interface Contract {
 	ArrayList<Object> calpriceafterdiscount(List<Products> cart, Map<String, Double> hm, double dcpn_value);
 
 	ArrayList<Object> calshippinggst(List<Products> cart) throws SQLException;
+
+	void addUser(User user) throws Exception;
 
 }

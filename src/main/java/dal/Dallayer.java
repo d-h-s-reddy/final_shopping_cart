@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import dao.DatabaseConnection;
 import models.Discount;
 import models.Products;
+import models.User;
 
 public class Dallayer implements Contract {
 	DatabaseConnection c = new DatabaseConnection();
@@ -174,9 +175,9 @@ public class Dallayer implements Contract {
 			shippingcharge += p.getShipping_charge();
 		}
 		Map<String, Double> result = new HashMap<>();
-		result.put("totalAmount", totalamount);
-		result.put("gst", gst);
-		result.put("shipping_charge", shippingcharge);
+		result.put("SubTotal", totalamount);
+		result.put("GST", gst);
+
 		return result;
 	}
 
@@ -194,6 +195,16 @@ public class Dallayer implements Contract {
 			dis.add(d);
 		}
 		return dis;
+	}
+
+	@Override
+	public void addUser(User user) throws Exception {
+		String query = "INSERT INTO j_user_credentials (username, password) VALUES (?, ?)";
+		PreparedStatement pstmt = con.prepareStatement(query);
+		pstmt.setString(1, user.getUsername());
+		pstmt.setString(2, user.getPassword());
+		pstmt.executeUpdate();
+		System.out.println("User added ");
 	}
 
 	@Override
@@ -229,8 +240,8 @@ public class Dallayer implements Contract {
 			totalamount += t;
 			gst += pg;
 		}
-		hm.put("totalAmount", totalamount);
-		hm.put("gst", gst);
+		hm.put("SubTotal", totalamount);
+		hm.put("GST", gst);
 		ArrayList<Object> al = new ArrayList<>();
 		al.add(datapricegst);
 		al.add(hm);

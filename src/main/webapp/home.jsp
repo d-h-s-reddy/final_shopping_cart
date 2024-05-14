@@ -47,6 +47,7 @@
 </head>
 <body>
   <div class="headerdiv">
+  <button class="register-button" onclick="location.href='signup.jsp'">Register</button>
      <p>Shopping Cart</p>
      <div class="hdivoptions">
          <select id="CategoryList">
@@ -68,7 +69,22 @@
             <option value="1000" >1000-10000</option>
             <option value="10000" >Above 10000</option>
          </select>
-         <button class="login-button" id="OpenLogin" >Login</button>
+         <%
+if (session.getAttribute("LOGGEDIN") != null && session.getAttribute("LOGGEDIN").equals("yes")) {
+    String username = (String) session.getAttribute("USERNAME");
+%>
+    <button class="login-button" id="OpenLogin" style="display: none;">Login</button>
+    <span> <%= username %></span>
+    <!-- Add a logout link here if needed -->
+<%
+} else {
+%>
+    <button class="login-button" id="OpenLogin">Login</button>
+<%
+}
+%>
+
+          
          <button class="cart-button" id="OpenCart"><i class="fas fa-shopping-cart"></i></button>
      </div>
   </div>
