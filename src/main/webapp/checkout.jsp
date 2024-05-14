@@ -8,7 +8,7 @@
 <html>
 <head>
 <meta charset="ISO-8859-1">
-<title>Insert title here</title>
+<title>Checkout Page</title>
 <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
@@ -16,49 +16,54 @@
         body {
             padding: 20px;
         }
-        img{
-        width:100px;
-        heiht:80px;
+        img {
+            width: 100px;
+            height: 80px;
         }
-        table,tr,th{
-        text-align:center;
+        table, tr, th {
+            text-align: center;
         }
         .data-table {
-  width: 100%;
-  border-collapse: collapse;
-  border: 1px solid #ddd; /* Border color */
-}
-
-.data-table th, .data-table td {
-  padding: 8px;
-  text-align: left;
-  border-bottom: 1px solid #ddd; /* Border color */
-}
-
-.data-table th {
-  background-color: #f2f2f2; /* Header background color */
-  font-weight: bold;
-}
-
-.data-table tbody tr:nth-child(even) {
-  background-color: #f2f2f2; /* Even row background color */
-}
-
-.data-table tbody tr:hover {
-  background-color: #ddd; /* Hover row background color */
-}
-#valuesdata {
-  float: right; /* Or use margin-left: auto; */
-  width:300px;
-}
+            width: 80%;
+            border-collapse: collapse;
+            border: 1px solid #ddd; /* Border color */
+            margin: 0 auto;
+            
+        }
+        .data-table th, .data-table td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd; /* Border color */
+        }
+        .data-table th {
+            background-color: #f2f2f2; /* Header background color */
+            font-weight: bold;
+        }
+        .data-table tbody tr:nth-child(even) {
+            background-color: #f2f2f2; /* Even row background color */
+        }
+        .data-table tbody tr:hover {
+            background-color: #ddd; /* Hover row background color */
+        }
+        #valuesdata {
+             /* Or use margin-left: auto; */
+             padding:30px;
+            width: 300px;
+            margin: 0 auto;
+            
+            
+        }
+        .discountdropdown{
+           margin: 0 auto;
+        }
     </style>
 </head>
 <body>
     <% 
-       ArrayList<Products> cart=(ArrayList<Products>)session.getAttribute("cart");
-       request.getRequestDispatcher("/DataCalculation").include(request,response);
-       Map<String,Double> hm=(Map<String,Double>)session.getAttribute("priceDetails");
-      %>
+       ArrayList<Products> cart = (ArrayList<Products>) session.getAttribute("cart");
+       request.getRequestDispatcher("/DataCalculation").include(request, response);
+       Map<String, Double> hm = (Map<String, Double>) session.getAttribute("priceDetails");
+    %>
  
 <div class="container">
     <h2>Product Details</h2>
@@ -71,7 +76,6 @@
                 <th>Quantity</th>
                 <th>GST</th>
                 <th>Shipping Charge</th>
-                
             </tr>
         </thead>
         <tbody>
@@ -88,144 +92,133 @@
     </table>
     <br><br>
 </div>
-<div>
-   <select id="discountvalues">
-       <option value="">Select and discount coupon</option>
-       <% request.getRequestDispatcher("/DiscountServlet").include(request,response);
-   ArrayList<Discount> d = (ArrayList<Discount>)request.getAttribute("discount"); 
-       if(d != null) {
-                for (Discount dis: d) { %>
+
+<div id="discountdropdown" class="text-center">
+    <label for="discountvalues">Apply discount coupon:</label>
+    <select id="discountvalues">
+        <option value="">Select a discount coupon</option>
+        <% 
+            request.getRequestDispatcher("/DiscountServlet").include(request, response);
+            ArrayList<Discount> d = (ArrayList<Discount>) request.getAttribute("discount"); 
+            if (d != null) {
+                for (Discount dis : d) { %>
                     <option value="<%= dis.getDcpn_value() %>"><%= dis.getDcpn_title() %></option>
                 <% }
-            } %>
-   </select>
-
+            } 
+        %>
+    </select>
 </div>
 
-<div id="discountdetails">
-  
-</div>
-<div id="valuesdata">
-</div>
-
+<div id="discountdetails"></div>
+<div id="valuesdata"></div>
 
 <br><br>
- <script>
+<script>
     $(document).ready(function() {
-	    $("#discountvalues").change(function() {
-	        var discount_value = $("#discountvalues").val();
-	        $.ajax({
-	            url: 'ApplyingDiscountServlet',
-	            type: 'POST',
-	            data: { "discount": discount_value },
-	            success: function(data) {
-	            	console.log(data[1]);
-	                
-	                calshipping(data);
-	            },
-	            error: function(xhr, status, error) {
-	                console.error(status, error);
-	            }
-	        });
-	    });
-	    function datadisplaying(data,ship){
-	    	$("#discountdetails").empty();
-	    	var $table = $('<table>').addClass('data-table');
-	    	  var $thead = $('<thead>');
-	    	  var $tbody = $('<tbody>');
+        $("#discountvalues").change(function() {
+            var discount_value = $("#discountvalues").val();
+            $.ajax({
+                url: 'ApplyingDiscountServlet',
+                type: 'POST',
+                data: { "discount": discount_value },
+                success: function(data) {
+                    console.log(data[1]);
+                    calshipping(data);
+                },
+                error: function(xhr, status, error) {
+                    console.error(status, error);
+                }
+            });
+        });
 
-	    	  // Create table header
-	    	  var $headerRow = $('<tr>');
-	    	  $headerRow.append($('<th>').text('Sno'));
-	    	  $headerRow.append($('<th>').text('Price'));
-	    	  $headerRow.append($('<th>').text('GST'));
-	    	  $headerRow.append($('<th>').text('Shipping Charge'));
-	    	  $headerRow.append($('<th>').text('Shipping GST'));
-	    	  $thead.append($headerRow);
-	    	  var count=1;
-	    	  // Create table body rows
-	    	  $.each(data, function(key, values) {
-	    		    var $row = $('<tr>');
-	    		    $row.append($('<td>').text(count));
-	    		    count=count+1;
-	    		    $.each(values, function(index, value) {
-	    		    	 var roundedValue = parseFloat(value).toFixed(2);
-	    		         $row.append($('<td>').text(roundedValue));
-	    		    });
-	    		    //i need to add the json ship which contain the two values how i can do this;
-	    		    if (ship[key]) { // Ensure the ship data exists for the current key
-                       $.each(ship[key], function(index, value) {
+        function datadisplaying(data, ship) {
+            $("#discountdetails").empty();
+            var $table = $('<table>').addClass('data-table');
+            var $thead = $('<thead>');
+            var $tbody = $('<tbody>');
+
+            // Create table header
+            var $headerRow = $('<tr>');
+            $headerRow.append($('<th>').text('Sno'));
+            $headerRow.append($('<th>').text('Price'));
+            $headerRow.append($('<th>').text('GST'));
+            $headerRow.append($('<th>').text('Shipping Charge'));
+            $headerRow.append($('<th>').text('Shipping GST'));
+            $thead.append($headerRow);
+            var count = 1;
+
+            // Create table body rows
+            $.each(data, function(key, values) {
+                var $row = $('<tr>');
+                $row.append($('<td>').text(count));
+                count = count + 1;
+                $.each(values, function(index, value) {
+                    var roundedValue = parseFloat(value).toFixed(2);
+                    $row.append($('<td>').text(roundedValue));
+                });
+                if (ship[key]) { // Ensure the ship data exists for the current key
+                    $.each(ship[key], function(index, value) {
                         var roundedValue = parseFloat(value).toFixed(2);
                         $row.append($('<td>').text(roundedValue));
-                     });
-                   }
-	     		    $tbody.append($row);
-	          });
-	    	 
+                    });
+                }
+                $tbody.append($row);
+            });
 
-	    		  $table.append($thead).append($tbody);
-	    		  // Append the table to the body
-	    		  $('#discountdetails').append($table);	 
-	    }
-	    function  pricegstdisplay(data,ship){
-	    	
-	    	$("#valuesdata").empty();
-	    	var $dataContainer = $('#valuesdata');
-	    	  var $table = $('<table>').addClass('data-table').attr('id', 'myDataTable');;
-	    	  var $tbody = $('<tbody>');
-	    	  
-	    	  // Loop through the data object and create table rows
-	    	  var total=0;
-	    	  $.each(data, function(key, value) {
-	    	    var $row = $('<tr>');
-	    	    $row.append($('<td>').text(key));
-	    	    $row.append($('<td>').text(value.toFixed(2)));
-	    	    total=total+Number(value.toFixed(2));
-	    	    // Round off to 2 decimal places
-	    	    $tbody.append($row);
-	    	  });
-	    	  $.each(ship, function(key, value) {
-		    	    var $row = $('<tr>');
-		    	    $row.append($('<td>').text(key));
-		    	    $row.append($('<td>').text(value.toFixed(2)));
-		    	    total=total+Number(value.toFixed(2));
-		    	    // Round off to 2 decimal places
-		    	    $tbody.append($row);
-		     });
-	    	 var $row=$('<tr>');
-	    	 $row.append($('<td>').text("Total Amount to be paid"));
-	    	 $row.append($('<td>').text(total));
-	    	 $tbody.append($row);
-	    	  
-	    	  
+            $table.append($thead).append($tbody);
+            $('#discountdetails').append($table);
+        }
 
-	    	  // Append table body to the table
-	    	  $table.append($tbody);
+        function pricegstdisplay(data, ship) {
+            $("#valuesdata").empty();
+            var $dataContainer = $('#valuesdata');
+            var $table = $('<table>').addClass('data-table').attr('id', 'myDataTable');
+            var $tbody = $('<tbody>');
+            var total = 0;
 
-	    	  // Append table to the data container
-	    	  $dataContainer.append($table);
-	    }
-	    function calshipping(data){
-	    	$.ajax({
-	    		url:'ShippingServlet',
-	    		type:'POST',
-	    		dataType:"json",
-	    		success:function(ship){
-	    			console.log(ship);
-	    			console.log(ship[1]["ShippingGst"])
-	    			datadisplaying(data[0],ship[0]);
-	                pricegstdisplay(data[1],ship[1]);
-	    			
-	    		},
-	    		error: function(xhr, status, error) {
-	                console.error(status, error);
-	            }
-	    	});
-	    }
-	    
-	});
-     
- </script>
-      
+            // Loop through the data object and create table rows
+            $.each(data, function(key, value) {
+                var $row = $('<tr>');
+                $row.append($('<td>').text(key));
+                $row.append($('<td>').text(value.toFixed(2)));
+                total = total + Number(value.toFixed(2));
+                $tbody.append($row);
+            });
+
+            $.each(ship, function(key, value) {
+                var $row = $('<tr>');
+                $row.append($('<td>').text(key));
+                $row.append($('<td>').text(value.toFixed(2)));
+                total = total + Number(value.toFixed(2));
+                $tbody.append($row);
+            });
+
+            var $row = $('<tr>');
+            $row.append($('<td>').text("Total Amount to be paid"));
+            $row.append($('<td>').text(total.toFixed(2))); // Ensure total is rounded to 2 decimal places
+            $tbody.append($row);
+
+            $table.append($tbody);
+            $dataContainer.append($table);
+        }
+
+        function calshipping(data) {
+            $.ajax({
+                url: 'ShippingServlet',
+                type: 'POST',
+                dataType: "json",
+                success: function(ship) {
+                    console.log(ship);
+                    console.log(ship[1]["ShippingGst"]);
+                    datadisplaying(data[0], ship[0]);
+                    pricegstdisplay(data[1], ship[1]);
+                },
+                error: function(xhr, status, error) {
+                    console.error(status, error);
+                }
+            });
+        }
+    });
+</script>
 </body>
 </html>
